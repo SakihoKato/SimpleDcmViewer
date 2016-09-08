@@ -64,6 +64,7 @@ BEGIN_MESSAGE_MAP(CSimpleDcmViewerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_EXPORTTRAW3D, &CSimpleDcmViewerDlg::OnBnClickedButtonExporttraw3d)
 	ON_BN_CLICKED(IDC_BUTTON_QUIT		 , &CSimpleDcmViewerDlg::OnBnClickedButtonQuit)
 	ON_BN_CLICKED(IDC_BUTTON_EXPORTTRAW3D_USHORT, &CSimpleDcmViewerDlg::OnBnClickedButtonExporttraw3dUshort)
+	ON_BN_CLICKED(IDC_BUTTON_AUTOCLIP, &CSimpleDcmViewerDlg::OnBnClickedButtonAutoclip)
 END_MESSAGE_MAP()
 
 
@@ -607,5 +608,74 @@ void CSimpleDcmViewerDlg::OnBnClickedButtonExporttraw3dUshort()
 	//todo 
 	//	make this sined short and u short!!
 
+
+}
+
+
+
+
+void CSimpleDcmViewerDlg::OnBnClickedButtonAutoclip()
+{
+	const int W = TFileManager::getInst()->m_W;
+	const int H = TFileManager::getInst()->m_H;
+	const int D = TFileManager::getInst()->m_D;
+
+	if (W == 0)
+	{
+		AfxMessageBox("‰æ‘œ‚ª“Ç‚Ýž‚Ü‚ê‚Ä‚¢‚Ü‚¹‚ñ");
+		return;
+	}
+
+	float **img = TFileManager::getInst()->m_volume;
+	/*
+	double sum = 0;
+	for (int z = 0; z < D; ++z)
+	{
+		for (int y = 0; y < H; ++y)
+		{
+			for (int x = 0; x < W; ++x)
+			{
+				sum += img[z][x + y*W];
+			}
+		}
+	}
+	*/
+	double mean = m_slider_winLvMin.GetRangeMin() + 5000;
+
+	int minX = W - 1;
+	int minY = H - 1;
+	int minZ = D - 1;
+
+	int maxX = 0;
+	int maxY = 0;
+	int maxZ = 0;
+
+	for (int z = 0; z < D; ++z)
+	{
+		for (int y = 0; y < H; ++y)
+		{
+			for (int x = 0; x < W; ++x)
+			{
+				if (img[z][x + y*W] > mean)
+				{
+					minX = min(minX, x);
+					minY = min(minY, y);
+					minZ = min(minZ, z);
+					maxX = max(maxX, x);
+					maxY = max(maxY, y);
+					maxZ = max(maxZ, z);
+				}
+			}
+		}
+	}
+
+	fprintf(stderr, "%d %d %d  %d %d %d\n", minX, minY, minZ, maxX, maxY, maxZ);
+
+	m_spin_clipXmin.SetPos32(minX);
+	m_spin_clipYmin.SetPos32(minY);
+	m_spin_clipZmin.SetPos32(minZ);
+	m_spin_clipXmax.SetPos32(maxX);
+	m_spin_clipYmax.SetPos32(maxY);
+	m_spin_clipZmax.SetPos32(maxZ);
 
 }
